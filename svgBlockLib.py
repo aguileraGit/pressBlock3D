@@ -59,6 +59,8 @@ class blkLibrary:
         
         self.xWallWidth = None
         self.yWallWidth = None
+        self.xhollowPercentage = 0.8
+        self.yhollowPercentage = 0.8
     
     
     def readSVGFromFile(self, fileName):
@@ -123,12 +125,22 @@ class blkLibrary:
                 .extrude(-1*self.bodyHeight)
         )
         
+        self.bbox = self.base.faces('<Z').val().BoundingBox()
+        
         
     def hollowBody(self):
         '''
+        Need to think about this. Looking at sample SVGs, sometimes the SVG is
+        super large in the XY directions. It might be better to scale the height
+        by 10 or 100. 
         
+        Hollowing could be done in percentage or manual width
         '''
-        pass
+        self.base = (
+            self.base.faces('<Z')
+            .rect(self.bbox.xlen*self.xhollowPercentage, self.bbox.ylen*self.yhollowPercentage)
+            .extrude(10, combine='cut')
+        )
         
         
 
