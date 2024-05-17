@@ -1,6 +1,6 @@
 
 ## To Do
-- [ ] Create git
+- [x] Create git
 - [ ] Write Library
 - [ ] Should we be checking for paths that aren't closed? I believe svgpathtools has a way to check.
 - [ ] Look at SVGs that aren't working in 'jupyter-cadquery-modified' folder. Unsure if it's related to above.
