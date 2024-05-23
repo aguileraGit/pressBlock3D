@@ -13,22 +13,6 @@ import cadquery as cq
 import numpy as np
 from math import sin, cos, sqrt, pi, acos, fmod, degrees
 
-import svgBlockLib
-
-from jupyter_cadquery import (
-    PartGroup, Part, Edges, Faces, Vertices, show,
-    close_viewer, close_viewers, get_viewer, open_viewer, set_defaults, get_defaults
-)
-
-from jupyter_cadquery.replay import replay, enable_replay, disable_replay, reset_replay
-
-set_defaults(axes=True, timeit=False, show_parent=False)
-
-enable_replay(False, False)
-show_object = replay
-
-cv = open_viewer("3dViewer", anchor="right", height=1024)
-  
 class blkLibrary:
 
     def __init__(self, createBlock=False):
@@ -57,10 +41,15 @@ class blkLibrary:
         self.xLenAdj = 1
         self.yLenAdj = 1
         
+        #x/y wall width is defined later on
         self.xWallWidth = None
         self.yWallWidth = None
+        
+        #Hollow x/y amount can be defined as a percentage
         self.xhollowPercentage = 0.8
         self.yhollowPercentage = 0.8
+        
+        
     
     
     def readSVGFromFile(self, fileName):
@@ -68,6 +57,18 @@ class blkLibrary:
         Sets svgPath to the fileName. When calling parseSVG, svg2Paths can read in a file from disk
         '''
         self.svgPath = fileName
+        
+        
+    def scaleSVG(self):
+        #https://stackoverflow.com/questions/43199869/rotate-and-scale-a-complete-svg-document-using-python
+        pass
+    
+    
+    def doMath(self):
+        '''
+        The idea is to read the SVG and add some default values to be used later on. Going to finish the code as-is and then come back to fill in the values here.
+        '''
+        pass
         
         
     def parseSVG(self):
@@ -130,18 +131,62 @@ class blkLibrary:
         
     def hollowBody(self):
         '''
-        Need to think about this. Looking at sample SVGs, sometimes the SVG is
-        super large in the XY directions. It might be better to scale the height
-        by 10 or 100. 
-        
         Hollowing could be done in percentage or manual width
+        
+        Setting a constant buffer of 2 here
         '''
+        
+        bboxTemp = self.base.faces('<Z').val().BoundingBox()
+        
+        self.hollowDepth = self.overallTypeHeight - self.neckHeight - 2
+        
+        print('HollowDepth: ', self.hollowDepth)
+        
         self.base = (
             self.base.faces('<Z')
-            .rect(self.bbox.xlen*self.xhollowPercentage, self.bbox.ylen*self.yhollowPercentage)
-            .extrude(10, combine='cut')
+            .workplane()
+            .rect(bboxTemp.xlen*self.xhollowPercentage, bboxTemp.ylen*self.yhollowPercentage)
+            .extrude(-1*self.hollowDepth/2, combine='cut')
         )
         
+    def createAndCutPyramid(self):
+        bboxTemp = self.base.faces('>>Z[2]').val().BoundingBox()
+        
+        print(bboxTemp.xlen)
+        print(bboxTemp.ylen)
+        
+        origin = (bboxTemp.center.x,
+                  bboxTemp.center.y, 
+                  bboxTemp.center.z
+                 )
+        
+        print(origin)
+        
+        pyramid = (
+                    cq.Workplane('XY', origin=(origin))
+                    .rect(bboxTemp.xlen, bboxTemp.ylen)
+                    .workplane(offset=self.hollowDepth/2)
+                    .rect(bboxTemp.xlen/100, bboxTemp.ylen/100)
+                    .loft()
+                  )
+        self.base = self.base.cut(pyramid, clean=True)
+                
+    def cutFeet(self):
+        bboxTemp = self.base.faces('>X').val().BoundingBox()
+        
+        self.base = (
+            self.base.faces('>X')
+            .workplane()
+            #Move to lower-left corner
+            .center(-1*bboxTemp.ylen/2,0)
+            .move(bboxTemp.ylen*0.18, 0)   #_
+            .line(bboxTemp.ylen*0.02, 20)  #_/
+            .line(bboxTemp.ylen*0.6, 0)    #_/----
+            .line(bboxTemp.ylen*0.02, -20) #_/----\
+            .close()
+            .extrude(-1*self.bbox.xlen, combine='cut')
+        )
+           
         
 
 ######################################################################
