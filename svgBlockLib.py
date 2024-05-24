@@ -10,8 +10,11 @@ Uses code developed by Dov Grobgeld<dov.grobgeld@gmail.com>
 import svgpathtools
 from svgpathtools import svg2paths
 import cadquery as cq
+from cadquery import exporters
 import numpy as np
 from math import sin, cos, sqrt, pi, acos, fmod, degrees
+from stl import mesh
+import uuid
 
 class blkLibrary:
 
@@ -19,6 +22,10 @@ class blkLibrary:
         
         #Add Function to CQ 
         cq.Workplane.addSvgPath = addSvgPath
+        
+        #SVG data
+        self.width = None
+        self.height = None
         
         self.svgPath = None
         self.paths = None
@@ -32,9 +39,13 @@ class blkLibrary:
         self.base = cq.Workplane('XY').tag('workFace')
         
         # https://www.pinterest.com/pin/63754150967869908/
-        self.neckHeight = 2
-        self.bodyHeight = 0
-        self.overallTypeHeight = 23.31
+        self.neckHeight = 2 #This is the SVG 3D height
+        self.neckBuffer = 2 #This is a solid buffer between the neck and hollow cutout
+        self.bodyHeight = 0 # Calculated later on
+        self.constantTypeHeight = 23.31 #This shall never change
+        self.overallTypeHeight = 23.31  #This can change if scaleBy changes
+        
+        self.scaleBy = 1
         
         #Percentage to increase the spacing between the SVG
         # and edge of type. Shall be greater than 1.
@@ -49,9 +60,16 @@ class blkLibrary:
         self.xhollowPercentage = 0.8
         self.yhollowPercentage = 0.8
         
+        #Actual depth is calculated
+        self.hollowDepth = None
         
-    
-    
+        #Percentage of the height of the block to be cut out for the feet
+        self.feetCutOutPercentage = 0.04
+        
+        #Fillet Amount
+        self.filletAmount = 1.2
+        
+        
     def readSVGFromFile(self, fileName):
         '''
         Sets svgPath to the fileName. When calling parseSVG, svg2Paths can read in a file from disk
@@ -59,16 +77,39 @@ class blkLibrary:
         self.svgPath = fileName
         
         
-    def scaleSVG(self):
+    def setScale(self, scale):
+        '''
         #https://stackoverflow.com/questions/43199869/rotate-and-scale-a-complete-svg-document-using-python
-        pass
+        #https://cairosvg.org/documentation/
+        
+        #Look at this gist!
+        https://gist.github.com/dduan/251cb9816787f3e4125f5cb197d2144e
+        
+        Or maybe use svgelements
+        https://pypi.org/project/svgelements/
+        
+        Scaling is hard. Scaling is important because SVGs are allowed to have any
+        width/height they choose. Most are not in double digits, but rather 100's
+        if not 1000's of unitless measurements. Ultimately, the height must be ~23mm
+        to meet the 'standard' size. To overcome this, a scale will be set and the 
+        code will reflect the scaling. The STL will be scaled at the end to meet 
+        the standard type size.
+        
+        Expected to be 1, 10, 100, 1000, but really can be anything.
+        '''
+        self.scaleBy = scale
     
     
     def doMath(self):
         '''
         The idea is to read the SVG and add some default values to be used later on. Going to finish the code as-is and then come back to fill in the values here.
         '''
-        pass
+        self.overallTypeHeight = self.overallTypeHeight * self.scaleBy
+        self.neckHeight = self.neckHeight * self.scaleBy
+        self.neckBuffer = self.neckBuffer * self.scaleBy
+        self.filletAmount = self.filletAmount * self.scaleBy
+        
+        self.bodyHeight = self.overallTypeHeight - self.neckHeight
         
         
     def parseSVG(self):
@@ -81,6 +122,18 @@ class blkLibrary:
         self.paths = paths
         self.attributes = attributes
         self.pathCount = len(paths)
+        
+        svgAttributes = svg2paths(self.svgPath, return_svg_attributes = True)
+
+        try:
+            print(f"SVG Width: {svgAttributes[2]['width']}")
+            print(f"SVG Height: {svgAttributes[2]['height']}")
+            self.width = svgAttributes[2]['width']
+            self.height = svgAttributes[2]['height']
+        except:
+            print('No SVG Height/Width defined')
+            self.width = 0
+            self.height = 0
         
 
     def translate2Dto3D(self):
@@ -114,53 +167,60 @@ class blkLibrary:
         https://stackoverflow.com/questions/77845206/cadquery-unexpected-valueerror-null-topods-shape-object-during-cut-operation
         '''
         
-        self.bodyHeight = self.overallTypeHeight - self.neckHeight
         
-        self.bbox = self.base.val().BoundingBox()
+        bboxTemp = self.base.val().BoundingBox()
+        
+        #Update the height and width (looking from above)
+        self.width = bboxTemp.xlen * self.xLenAdj
+        self.height = bboxTemp.ylen * self.yLenAdj
         
         self.base = (
                 self.base.workplaneFromTagged('workFace')
                 .workplane(offset = 0.0001)
-                .center(self.bbox.center.x, self.bbox.center.y)
-                .rect(self.bbox.xlen*self.xLenAdj, self.bbox.ylen*self.yLenAdj)
+                .center(bboxTemp.center.x, bboxTemp.center.y)
+                .rect(self.width, self.height)
                 .extrude(-1*self.bodyHeight)
         )
-        
-        self.bbox = self.base.faces('<Z').val().BoundingBox()
         
         
     def hollowBody(self):
         '''
         Hollowing could be done in percentage or manual width
         
-        Setting a constant buffer of 2 here
+        Currently percentage only. Hollow Depth is divided by 2 for the pyramid cutout
+        in the next step.
+
         '''
         
         bboxTemp = self.base.faces('<Z').val().BoundingBox()
         
-        self.hollowDepth = self.overallTypeHeight - self.neckHeight - 2
+        self.hollowDepth = self.overallTypeHeight - self.neckHeight - self.neckBuffer
         
-        print('HollowDepth: ', self.hollowDepth)
+        #Calculate the x/y wall thickness
+        self.xWallThickness = (self.width - (bboxTemp.xlen * self.xhollowPercentage))/2
+        self.yWallThickness = (self.height - (bboxTemp.ylen * self.yhollowPercentage))/2
         
         self.base = (
             self.base.faces('<Z')
             .workplane()
-            .rect(bboxTemp.xlen*self.xhollowPercentage, bboxTemp.ylen*self.yhollowPercentage)
+            .rect(bboxTemp.xlen * self.xhollowPercentage,
+                  bboxTemp.ylen * self.yhollowPercentage)
             .extrude(-1*self.hollowDepth/2, combine='cut')
         )
         
-    def createAndCutPyramid(self):
-        bboxTemp = self.base.faces('>>Z[2]').val().BoundingBox()
         
-        print(bboxTemp.xlen)
-        print(bboxTemp.ylen)
+    def createAndCutPyramid(self):
+        '''
+        Creates a new pyramid body. Then removes it from the base body.
+        
+        It top of the pyramid is set to 1/100 of the hollowed out areas.
+        '''
+        bboxTemp = self.base.faces('>>Z[2]').val().BoundingBox()
         
         origin = (bboxTemp.center.x,
                   bboxTemp.center.y, 
                   bboxTemp.center.z
                  )
-        
-        print(origin)
         
         pyramid = (
                     cq.Workplane('XY', origin=(origin))
@@ -171,6 +231,7 @@ class blkLibrary:
                   )
         self.base = self.base.cut(pyramid, clean=True)
                 
+            
     def cutFeet(self):
         bboxTemp = self.base.faces('>X').val().BoundingBox()
         
@@ -179,15 +240,62 @@ class blkLibrary:
             .workplane()
             #Move to lower-left corner
             .center(-1*bboxTemp.ylen/2,0)
-            .move(bboxTemp.ylen*0.18, 0)   #_
-            .line(bboxTemp.ylen*0.02, 20)  #_/
-            .line(bboxTemp.ylen*0.6, 0)    #_/----
-            .line(bboxTemp.ylen*0.02, -20) #_/----\
+            .move(bboxTemp.ylen*0.18, 0)                                        #_
+            .line(bboxTemp.ylen*0.02, self.height*self.feetCutOutPercentage)    #_/
+            .line(bboxTemp.ylen*0.6, 0)                                         #_/----
+            .line(bboxTemp.ylen*0.02, -1*self.height*self.feetCutOutPercentage) #_/----\
             .close()
-            .extrude(-1*self.bbox.xlen, combine='cut')
+            .extrude(-1*self.width, combine='cut')
         )
            
+    def smoothOuterEdges(self):
+        self.base = (
+            self.base.faces('<Y or >Y or >X or <Z')
+            .edges()
+            .fillet(self.filletAmount)
+        )
         
+    def exportSTL(self, stlName=None, axis='XYZ'):
+        '''
+        Scales the STL if self.scaleBy is other than 1.
+        
+        If scaling, axis to scale can be selected.
+        
+        If no name is given, one will be generated.
+        '''
+        if stlName == None:
+            stlName = str(uuid.uuid4()) + '.stl'
+        
+        #Verify it ends with stl or add it.
+        if stlName[-4:] != '.stl':
+            stlName = stlName + '.stl'
+            
+        #Need to remove in the future. Push to stl folder
+        stlName = 'stls/' + stlName
+        
+        
+        if self.scaleBy != 1:
+            tempUUID = str(uuid.uuid4()) + '.stl'
+            exporters.export(self.base, tempUUID)
+            
+            #Load STL
+            tempMesh = mesh.Mesh.from_file(tempUUID)
+            #Scale
+            #scaledSTL = Poly3DCollection(self.base.vectors * 1/self.scaleBy, 
+            #                               linewidths=1, alpha=0.2)
+            tempMesh = tempMesh.points * 2.0
+            
+            #Save
+            #tempMesh.save(stlName, mode=stl.Mode.ASCII)
+            
+            # Create a new Mesh object with the scaled points and same triangles as before
+            new_mesh = mesh.Mesh(np.zeros_like(tempMesh.points), np.ones_like(tempMesh.vectors), tempMesh.vectors)
+
+            # Export the scaled STL file to 'output.stl'
+            new_mesh.write(stlName)
+            
+        else:
+            exporters.export(self.base, stlName)
 
 ######################################################################
 #  A proof of concept adding a svg path into a cadQuery Workspace
