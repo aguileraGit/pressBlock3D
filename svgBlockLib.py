@@ -154,6 +154,21 @@ class blkLibrary:
             self.base = self.base.union(svgPath, glue = True)
             
             
+    def buildBoundingBox(self):
+        '''
+        This function builds a 'box' around the SVG and returns the height and width. Hopefully this will be more useful in the future when the UI can display the w/h and prompt them to scale accordingly.
+        '''
+        
+        bboxTemp = self.base.val().BoundingBox()
+        
+        #Update the height and width (looking from above)
+        self.width = bboxTemp.xlen * self.xLenAdj
+        self.height = bboxTemp.ylen * self.yLenAdj
+        
+        self.centerX = bboxTemp.center.x
+        self.centerY = bboxTemp.center.y
+        
+            
     def buildBody(self):
         '''
         Builds body of the type. Builds a box around the 3D SVG.
@@ -167,17 +182,10 @@ class blkLibrary:
         https://stackoverflow.com/questions/77845206/cadquery-unexpected-valueerror-null-topods-shape-object-during-cut-operation
         '''
         
-        
-        bboxTemp = self.base.val().BoundingBox()
-        
-        #Update the height and width (looking from above)
-        self.width = bboxTemp.xlen * self.xLenAdj
-        self.height = bboxTemp.ylen * self.yLenAdj
-        
         self.base = (
                 self.base.workplaneFromTagged('workFace')
                 .workplane(offset = 0.0001)
-                .center(bboxTemp.center.x, bboxTemp.center.y)
+                .center(self.centerX, self.centerY)
                 .rect(self.width, self.height)
                 .extrude(-1*self.bodyHeight)
         )
@@ -274,29 +282,24 @@ class blkLibrary:
         stlName = 'stls/' + stlName
         
         
-        if self.scaleBy != 1:
+        if self.scaleBy != 1.0:
+            
             tempUUID = str(uuid.uuid4()) + '.stl'
             exporters.export(self.base, tempUUID)
             
             #Load STL
             tempMesh = mesh.Mesh.from_file(tempUUID)
+
             #Scale
-            #scaledSTL = Poly3DCollection(self.base.vectors * 1/self.scaleBy, 
-            #                               linewidths=1, alpha=0.2)
-            tempMesh = tempMesh.points * 2.0
-            
-            #Save
-            #tempMesh.save(stlName, mode=stl.Mode.ASCII)
-            
-            # Create a new Mesh object with the scaled points and same triangles as before
-            new_mesh = mesh.Mesh(np.zeros_like(tempMesh.points), np.ones_like(tempMesh.vectors), tempMesh.vectors)
+            tempMesh.vectors = tempMesh.vectors/self.scaleBy
 
             # Export the scaled STL file to 'output.stl'
-            new_mesh.write(stlName)
+            tempMesh.save(stlName)
             
         else:
             exporters.export(self.base, stlName)
 
+            
 ######################################################################
 #  A proof of concept adding a svg path into a cadQuery Workspace
 #  object.
