@@ -105,11 +105,41 @@ class blkLibrary:
         The idea is to read the SVG and add some default values to be used later on. Going to finish the code as-is and then come back to fill in the values here.
         '''
         self.overallTypeHeight = self.overallTypeHeight * self.scaleBy
-        self.neckHeight = self.neckHeight * self.scaleBy
+        #Neck Height must be set before converting SVG to 3D
+        #self.neckHeight = self.neckHeight * self.scaleBy
         self.neckBuffer = self.neckBuffer * self.scaleBy
         self.filletAmount = self.filletAmount * self.scaleBy
         
         self.bodyHeight = self.overallTypeHeight - self.neckHeight
+        
+        
+    def estimateSVGSize(self):
+        '''
+        Sets the estimatedWidth and estimatedHeight for a SVG. 
+        
+        It's not reliable to get the svgAttributes as this isn't required by the SVG standard.
+        
+        https://stackoverflow.com/questions/47682830/get-bounding-box-of-svg-drawing
+        
+        Need to check to make sure self.paths exists
+        '''
+        
+        #Loop though paths derived from parseSVG Fn
+        for i, path in enumerate(self.paths):
+            if i == 0:
+                # Initialise the overall min-max with the first path
+                xmin, xmax, ymin, ymax = path.bbox()
+            else:
+                # Expand bounds to match path bounds if needed
+                p_xmin, p_xmax, p_ymin, p_ymax = path.bbox()
+                xmin = p_xmin if p_xmin < xmin else xmin
+                xmax = p_xmax if p_xmax > xmax else xmax
+                ymin = p_ymin if p_ymin < ymin else ymin
+                ymax = p_ymax if p_ymax > ymax else ymax
+
+        print(xmax-xmin, ymax-ymin)
+        self.estimatedWidth = xmax - xmin
+        self.estimatedHeight = ymax - ymin
         
         
     def parseSVG(self):
@@ -117,6 +147,14 @@ class blkLibrary:
         Given a valid svgPath, svg2paths will return the paths and attributes.
         
         In the future, I hope this could include an HTML link.
+
+        Sets estimated length and width and number of paths
+        Need to find a way to get other non-path elements
+        - text, shapes, transforms, etc.
+        See: https://pypi.org/project/svgelements/
+
+        Should return a warning if non-paths are found. Not
+        an error.
         '''
         paths, attributes = svg2paths(self.svgPath)
         self.paths = paths
@@ -125,15 +163,6 @@ class blkLibrary:
         
         svgAttributes = svg2paths(self.svgPath, return_svg_attributes = True)
 
-        try:
-            print(f"SVG Width: {svgAttributes[2]['width']}")
-            print(f"SVG Height: {svgAttributes[2]['height']}")
-            self.width = svgAttributes[2]['width']
-            self.height = svgAttributes[2]['height']
-        except:
-            print('No SVG Height/Width defined')
-            self.width = 0
-            self.height = 0
         
 
     def translate2Dto3D(self):
@@ -153,6 +182,7 @@ class blkLibrary:
             #show_object(svgPath)
             self.base = self.base.union(svgPath, glue = True)
             
+
             
     def buildBoundingBox(self):
         '''
@@ -263,6 +293,46 @@ class blkLibrary:
             .fillet(self.filletAmount)
         )
         
+    def exportSVG(self, svgName=None, **kwargs):
+        '''
+        Look at exporting TJS. Made for ThreeJS
+        Doc: https://cadquery.readthedocs.io/en/latest/importexport.html?highlight=Export%20SVG
+        '''
+        
+        if svgName == None:
+            svgName = 'svgs/' + str(uuid.uuid4()) + '.svg'
+        
+        #Default options
+        opts = {
+                "width": 600,
+                "height": 400,
+                "marginLeft": 60,
+                "marginTop": 60,
+                "showAxes": False,
+                "projectionDir": (0.5, 0.5, 0.5),
+                "strokeWidth": 1.6,
+                "strokeColor": (0, 0, 0),
+                "hiddenColor": (140, 140, 140),
+                "showHidden": True,
+            }
+        
+        for key, value in kwargs.items():
+            if key == 'projectionDir':
+                print(value)
+                opts[key] = value
+                
+            opts[key] = value
+            
+        print(opts)
+        
+        exporters.export(
+            self.base,
+            svgName,
+            opt=opts,
+        )
+        
+        return svgName
+        
     def exportSTL(self, stlName=None, axis='XYZ'):
         '''
         Scales the STL if self.scaleBy is other than 1.
@@ -295,6 +365,8 @@ class blkLibrary:
 
             # Export the scaled STL file to 'output.stl'
             tempMesh.save(stlName)
+            
+            #Delete tempUUID
             
         else:
             exporters.export(self.base, stlName)
