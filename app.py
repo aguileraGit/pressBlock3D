@@ -59,12 +59,17 @@ def processUpload():
             #Read SVG and do inital parsing
             blk.readSVGFromFile(app.config['UPLOAD_FOLDER'] + "/" + filename)
             blk.parseSVG()
-            
             blk.estimateSVGSize()
-            g.svgPathCount = blk.pathCount
-            g.svgWidth = blk.estimatedWidth
-            g.svgHeight = blk.estimatedHeight
-            g.setScale = 1
+            
+            g.pathCount = blk.pathCount
+            g.estimatedWidth = blk.estimatedWidth
+            g.estimatedHeight = blk.estimatedHeight
+
+            #Use estimated width and height to set defaults
+            set3DDefaults()
+            g.scaleBy = blk.scaleBy
+
+            #Update div
             turbo.push(turbo.update(render_template('_svgStats.html'), 'uploadResultsText'))    
 
 
@@ -75,4 +80,41 @@ def processUpload():
             g.alertText='Image uploaded to server!'
             turbo.push(turbo.update(render_template('_alerts.html'), 'divAlert'))
         
-        return {'status':'success'}
+        #Update website values
+        scaleName = 'webScale_' + str((int(blk.scaleBy)))
+        returnDict = {'status':'success',
+                      scaleName: 'checked',
+                      }
+
+        return returnDict
+
+
+def set3DDefaults():
+    '''
+    After SVG has been parsed, the known height/width can be used to make some
+    guesses on the rest of the values. This will hopefully get better over time.
+    
+    Should defulat values be pushed as g values as well?
+    '''
+
+    if max(blk.estimatedHeight, blk.estimatedWidth) < 100:
+        blk.neckHeight = 2
+        blk.setScale(1)
+        blk.feetCutOutPercentage = 0.08
+        blk.filletAmount = 0.02
+    elif max(blk.estimatedHeight, blk.estimatedWidth) < 1000:
+        blk.neckHeight = 20
+        blk.setScale(10)
+        blk.feetCutOutPercentage = 0.10
+        blk.filletAmount = 0.2
+    elif max(blk.estimatedHeight, blk.estimatedWidth) < 10000:
+        blk.neckHeight = 200
+        blk.setScale(100)
+        blk.feetCutOutPercentage = 0.12
+        blk.filletAmount = 2
+    else:
+        blk.neckHeight = 2000
+        blk.setScale(1000)
+        blk.feetCutOutPercentage = 0.14
+        blk.filletAmount = 20
+

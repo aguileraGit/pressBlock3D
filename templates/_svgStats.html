@@ -1,10 +1,11 @@
 <div class="container">
-    <h2>Success! - Upload successful.</h2>
-    <p>SVG has the following properties:</p>
-    <ul class="list-unstyled">
-        <li>Number of paths: {{ g.svgPathCount }}</li>
-        <li>Estimated Width: {{ g.svgWidth }}</li>
-        <li>Estimated Height: {{ g.svgHeight }}</li>
+    <h2>SVG Successfully Uploaded</h2>
+    <p class="text-secondary"><b>SVG has the following properties</b></p>
+    <ul>
+        <li class="text-start ms-5">Number of paths: {{ g.PathCount }}</li>
+        <li class="text-start ms-5">Estimated Width: {{ '%0.2f'| format(g.estimatedWidth|float)}}</li>
+        <li class="text-start ms-5">Estimated Height: {{ '%0.2f'| format(g.estimatedHeight|float)}}</li>
     </ul>
-    Scale will be adjusted to {{ g.setScale }}.
+    <p>Scale will be adjusted to {{ g.scaleBy }}</p>
+    <p>Default values have been updated. Proceed to next section.</p>
 </div>

@@ -69,14 +69,16 @@
       </style>
    </head>
    <body>
+      <!--
       <div class='container'>
           <h3>Test</h3>
           <form>
               <a href=# id=test><button class='btn btn-default'>Test</button></a>
           </form>
       </div>
+      -->
 
-      <div class="container" id="divAlert">      
+      <div class="container fixed-top" id="divAlert">      
       </div>
 
       <div class="container">
@@ -140,45 +142,45 @@
                           <div>
                             Set scale
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="exampleRadios" id="exampleRadios1" value="option1" checked>
-                                <label class="form-check-label" for="exampleRadios1">
-                                1x
+                                <input class="form-check-input" type="radio" name="exampleRadios" id="webScale_1" value="1">
+                                <label class="form-check-label" for="webScale_1">
+                                1
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="exampleRadios" id="exampleRadios2" value="option2">
-                                <label class="form-check-label" for="exampleRadios2">
-                                10x
+                                <input class="form-check-input" type="radio" name="exampleRadios" id="webScale_10" value="10">
+                                <label class="form-check-label" for="webScale_10">
+                                10
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="exampleRadios" id="exampleRadios3" value="option3">
-                                <label class="form-check-label" for="exampleRadios3">
-                                100x
+                                <input class="form-check-input" type="radio" name="exampleRadios" id="webScale_100" value="100">
+                                <label class="form-check-label" for="webScale_100">
+                                100
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="exampleRadios" id="exampleRadios4" value="option4">
-                                <label class="form-check-label" for="exampleRadios4">
-                                1000x
+                                <input class="form-check-input" type="radio" name="exampleRadios" id="webScale_1000" value="1000">
+                                <label class="form-check-label" for="webScale_1000">
+                                1000
                                 </label>
                             </div>
                           </div>
                       </div>
                       <div class="col-sm-4 col-md-4 col-lg-4 col-xl-4 col-xxl-6 ">
                           <div class="pb-3">
-                            <label for="customRange2" class="form-label">X Padding </label><small> [between 1 and 2]</small>
-                            <input type="range" class="form-range" min="1" max="2" step="0.1" id="customRange2">
+                            <label for="webPaddingX" class="form-label">Set X Padding </label><small> [between 1 and 2]</small>
+                            <input type="range" class="form-range" min="1.01" max="2" step="0.1" id="webPaddingX">
                           </div>
                           <div>
-                            <label for="customRange3" class="form-label">Y Padding </label><small> [between 1 and 2]</small>
-                            <input type="range" class="form-range" min="1" max="2" step="0.1" id="customRange3">
+                            <label for="webPaddingY" class="form-label">Set Y Padding </label><small> [between 1 and 2]</small>
+                            <input type="range" class="form-range" min="1.01" max="2" step="0.1" id="webPaddingY">
                           </div>
                       </div>
                       <div class="col-sm-4 col-md-4 col-lg-4 col-xl-4 col-xxl-4 align-self-center">
                           <div>
-                            <label for="customRange4" class="form-label">Neck Height </label><small> Value betwen 1 and 2</small>
-                            <input type="range" class="form-range" min="1" max="2" step="0.1" id="customRange4">
+                            <label for="webNeckHeight" class="form-label">Set Neck Height </label><small> [betwen 1 and 2]</small>
+                            <input type="range" class="form-range" min="1" max="2" step="0.1" id="webNeckHeight">
                           </div>
                       </div>
                     </div>
@@ -187,9 +189,9 @@
                           Updated size goes here
                       </div>
                     </div>
-                    <div class="row py-3 justify-content-center  px-3">
+                    <div class="row py-3 justify-content-center px-3">
                       <div class="text-center">
-                          <button type="button" class="btn btn-warning">Resize</button>
+                          <button type="button" class="btn btn-warning">Update</button>
                       </div>
                     </div>
                 </div>
@@ -344,10 +346,6 @@
               const name = dataRefs.input.getAttribute('data-post-name');
               if (!name) return;
 
-              //const file = dataRefs.input.getAtttribute()
-              //console.log(dataRefs.files)
-              console.log(dataRefs)
-
               const formData = new FormData();
               formData.append(name, dataRefs.files[0]);
             
@@ -358,11 +356,13 @@
               })
               .then(response => response.json())
               .then(data => {
-                console.log('posted: ', data);
+                //console.log('posted: ', data);
                 if (data.success === true) {
                   previewFiles(dataRefs);
                 } else {
                   console.log('URL: ', url, '  name: ', name)
+                  //Need code to read incoming dict and set default values
+                  console.log(data) 
                 }
               })
               .catch(error => {
