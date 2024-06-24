@@ -138,7 +138,7 @@
                     <p class="px-3">Neck Height is also set here. This is typically set to 1 or 2mm. It is automatically scaled when the Reize button is clicked. </p>
                     <p class="px-3">Use the resize button to get started. Use sliders to adjust settings. Once satisifed, continue on to the next step.</p>
                     <div class="row py-5 px-3">
-                      <div class="col-sm-2 col-md-2 col-lg-2 col-xl-2 col-xxl-2">
+                      <div class="col-sm-2 col-md-2 col-lg-4 col-xl-4 col-xxl-4 border">
                           <div>
                             Set scale
                             <div class="form-check">
@@ -167,26 +167,27 @@
                             </div>
                           </div>
                       </div>
-                      <div class="col-sm-4 col-md-4 col-lg-4 col-xl-4 col-xxl-6 ">
-                          <div class="pb-3">
-                            <label for="webPaddingX" class="form-label">Set X Padding </label><small> [between 1 and 2]</small>
-                            <input type="range" class="form-range" min="1.01" max="2" step="0.1" id="webPaddingX">
-                          </div>
-                          <div>
-                            <label for="webPaddingY" class="form-label">Set Y Padding </label><small> [between 1 and 2]</small>
-                            <input type="range" class="form-range" min="1.01" max="2" step="0.1" id="webPaddingY">
-                          </div>
-                      </div>
-                      <div class="col-sm-4 col-md-4 col-lg-4 col-xl-4 col-xxl-4 align-self-center">
-                          <div>
-                            <label for="webNeckHeight" class="form-label">Set Neck Height </label><small> [betwen 1 and 2]</small>
-                            <input type="range" class="form-range" min="1" max="2" step="0.1" id="webNeckHeight">
-                          </div>
-                      </div>
+                      <div class="col-sm-4 col-md-6 col-lg-6 col-xl-6 col-xxl-6 align-self-center border">
+                        <div>
+                          <label for="webNeckHeight" class="form-label">Set Neck Height </label><small> [betwen 1 and 2]</small>
+                          <input type="range" class="form-range" min="1" max="2" step="0.1" id="webNeckHeight">
+                        </div>
                     </div>
-                    <div class="row py-5 justify-content-center  px-3">
-                      <div class="text-center">
-                          Updated size goes here
+                    </div>
+                    <div class="row py-5 px-3">
+                      <div class="col-sm-4 col-md-4 col-lg-8 col-xl-8 col-xxl-8 border">
+                          <div class="pb-3">
+                            <label for="webPaddingX" class="form-label">Adjust X Padding </label><small> [between 1 and 2]</small>
+                            <input type="range" class="form-range" min="1.01" max="2" step="0.01" id="webPaddingX">
+                          </div>
+                          <div>
+                            <label for="webPaddingY" class="form-label">Adjust Y Padding </label><small> [between 1 and 2]</small>
+                            <input type="range" class="form-range" min="1.01" max="2" step="0.01" id="webPaddingY">
+                          </div>
+                      </div>
+                      <div class="col-sm-2 col-md-2 col-lg-2 col-xl-2 col-xxl-2 border">
+                        <div id="adjustedWidth"></div>
+                        <div id="adjustedHeight"></div>
                       </div>
                     </div>
                     <div class="row py-3 justify-content-center px-3">
@@ -203,7 +204,7 @@
                 <strong>3D Specific Settings</strong>
                 </button>
               </h2>
-              <div id="panelsStayOpen-collapseThree" class="accordion-collapse" aria-labelledby="panelsStayOpen-headingThree">
+              <div id="panelsStayOpen-collapseThree" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-headingThree">
                 <div class="accordion-body">
                     <p class="px-3">Set wall widths. Wall widths are based off percentages of the overall length and width generated above. Typical setting is between 0.6% and 1% of the total width. </p>
                     <p class="px-3">Set feet cut outs. This creates the notch at the bottom of the of the type. The height of the cutout is set using a very small percentage. Typically less than 0.2%.
@@ -240,6 +241,40 @@
               });
             });
           });
+      </script>
+
+      <script>
+        function updateAdjustedWidth() {
+          const estimatedWidth = document.getElementById("estimatedWidth").innerHTML;
+          const rangeValueX = document.getElementById("webPaddingX").value;
+          const adjustedWidth = document.getElementById("adjustedWidth");
+
+          // Multiply the range value by the estimated width
+          let adjustedValueX = rangeValueX * parseFloat(estimatedWidth);
+          
+          // Display the adjusted value in the adjusted width div
+          adjustedWidth.innerHTML = adjustedValueX.toString();
+        }
+
+        function updateAdjustedHeight() {
+          const estimatedHeight = document.getElementById("estimatedHeight").innerHTML;
+          const rangeValueY = document.getElementById("webPaddingY").value;
+          const adjustedHeight = document.getElementById("adjustedHeight");
+          
+          // Multiply the range value by the estimated width
+          let adjustedValueY = rangeValueY * parseFloat(estimatedHeight);
+          
+          // Display the adjusted value in the adjusted width div
+          adjustedHeight.innerHTML = adjustedValueY.toString();
+        }
+
+        // Get a reference to the range input element
+        const rangeInputX = document.getElementById("webPaddingX");
+        const rangeInputY = document.getElementById("webPaddingY");
+
+        // Add an event listener to the range input element
+        rangeInputX.addEventListener("input", updateAdjustedWidth);
+        rangeInputY.addEventListener("input", updateAdjustedHeight);
       </script>
 
       <script type=text/javascript>
@@ -363,6 +398,19 @@
                   console.log('URL: ', url, '  name: ', name)
                   //Need code to read incoming dict and set default values
                   console.log(data) 
+                  
+                  for (const key in data) {
+                    const value = data[key];
+                    if (key === "setScale") {
+                      // Find the radio button that matches the id and set it to checked
+                      const radioButton = document.getElementById(value);
+                      radioButton.checked = true;
+                      console.log(radioButton)
+                    } else {
+                      // Handle other keys in the dict
+                    }
+                  }
+
                 }
               })
               .catch(error => {

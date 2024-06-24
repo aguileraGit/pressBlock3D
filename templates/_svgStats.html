@@ -3,8 +3,8 @@
     <p class="text-secondary"><b>SVG has the following properties</b></p>
     <ul>
         <li class="text-start ms-5">Number of paths: {{ g.PathCount }}</li>
-        <li class="text-start ms-5">Estimated Width: {{ '%0.2f'| format(g.estimatedWidth|float)}}</li>
-        <li class="text-start ms-5">Estimated Height: {{ '%0.2f'| format(g.estimatedHeight|float)}}</li>
+        <li class="text-start ms-5">Estimated Width: <div id="estimatedWidth">{{ '%0.2f'| format(g.estimatedWidth|float)}}</div> </li>
+        <li class="text-start ms-5">Estimated Height: <div id="estimatedHeight">{{ '%0.2f'| format(g.estimatedHeight|float)}}</div>  </li>
     </ul>
     <p>Scale will be adjusted to {{ g.scaleBy }}</p>
     <p>Default values have been updated. Proceed to next section.</p>

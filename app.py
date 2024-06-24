@@ -83,7 +83,7 @@ def processUpload():
         #Update website values
         scaleName = 'webScale_' + str((int(blk.scaleBy)))
         returnDict = {'status':'success',
-                      scaleName: 'checked',
+                      'setScale': scaleName,
                       }
 
         return returnDict
