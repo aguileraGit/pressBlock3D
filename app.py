@@ -118,3 +118,51 @@ def set3DDefaults():
         blk.feetCutOutPercentage = 0.14
         blk.filletAmount = 20
 
+
+@app.route('/processBlockCreation', methods=['POST'])
+def processBlockCreation():
+    print('Fn: processBlockCreation')
+
+    if request.method == 'POST':
+        
+        print(request.json['webNeckHeight'])
+        print(request.json['xLenAdj'])
+        print(request.json['yLenAdj'])
+
+        #Do the actual translation from 2D to 3D
+        blk.translate2Dto3D()
+
+        #Add some buffer space around the 2D SVG
+        blk.xLenAdj = 1.02
+        blk.yLenAdj = 1.02
+
+        blk.buildBoundingBox()
+
+        #Calculate heights and Width and extrude
+        blk.doMath()
+        blk.buildBody()
+
+        #Set hollow amount and hollow body
+        blk.xhollowPercentage = 0.8
+        blk.yhollowPercentage = 0.8
+        blk.hollowBody()
+        blk.createAndCutPyramid()
+
+        #Cut Feet and Fillet
+        blk.cutFeet()
+        #blk.smoothOuterEdges()
+
+        #Create SVG
+        svgResultFilename = blk.exportSVG(folder='static/',
+                    projectionDir=(0.5, 0.5, 0.5),
+                    strokeColor=(0,0,0),
+                    strokeWidth=2.2,
+                    hiddenColor=(94,94,94)
+                    )
+
+        #Set name and push update
+        g.svgResultFilename = svgResultFilename
+        turbo.push(turbo.update(render_template('_svgResult2D.html'), 'result2D'))
+
+        returnDict = {'status':'success'}
+        return returnDict

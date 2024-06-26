@@ -1,13 +1,20 @@
 
-## To Do
+## To do
 - [x] Create git
 - [x] Write Library
-- [ ] Look at Fn: parseSVG to make front end easier to use
-- [ ] Add Fn to generate [SVG](https://cadquery.readthedocs.io/en/latest/importexport.html#exporting-svg) of final Block in 3D
+- [x] Look at Fn: parseSVG to make front end easier to use
+- [x] Add Fn to generate [SVG](https://cadquery.readthedocs.io/en/latest/importexport.html#exporting-svg) of final Block in 3D
 - [ ] Should we be checking for paths that aren't closed? I believe svgpathtools has a way to check.
+- [ ] Should be checking for SVGs with text and other non-supported commands to produce warning for user
+- [ ] Need to look at globals and turbo to see how this is affected when moving to ngix or similar
+- [ ] For X/Y padding, update function to return padding h/w as well
+
+
+## To do later
 - [ ] Look at SVGs that aren't working in 'jupyter-cadquery-modified' folder. Unsure if it's related to above.
 - [ ] Push to Streamlit(?)
 - [ ] Add in other SVG components (text, rect, lines). See below.
+
 
 ## Think about DB backend.
 Design based. User would create a design. Then add SVG and set parameters. Once happy with results, the user would save it. 

@@ -293,7 +293,7 @@ class blkLibrary:
             .fillet(self.filletAmount)
         )
         
-    def exportSVG(self, svgName=None, **kwargs):
+    def exportSVG(self, folder=None, svgName=None, **kwargs):
         '''
         Look at exporting TJS. Made for ThreeJS
         Doc: https://cadquery.readthedocs.io/en/latest/importexport.html?highlight=Export%20SVG
@@ -301,6 +301,9 @@ class blkLibrary:
         
         if svgName == None:
             svgName = 'svgs/' + str(uuid.uuid4()) + '.svg'
+
+        if folder != None:
+            svgName = folder + svgName
         
         #Default options
         opts = {

@@ -133,10 +133,10 @@
               </h2>
               <div id="panelsStayOpen-collapseTwo" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-headingTwo">
                 <div class="accordion-body">
-                    <p class="px-3">Scaling and height of the Final 3D block depends on the length and width of the SVG. Some are small (100px) while others can be very large (1000px or greater). SVGs can also have different units. Only pixels are used. They are converted into millimeters later on. Scale the length and width acordingly in order to produce properly (height) proportioned type. </p>
-                    <p class="px-3">You can also adjust the X and Y padding between the SVG and the edge of the block. This is given in a percentage of the block length and width.</p>
-                    <p class="px-3">Neck Height is also set here. This is typically set to 1 or 2mm. It is automatically scaled when the Reize button is clicked. </p>
-                    <p class="px-3">Use the resize button to get started. Use sliders to adjust settings. Once satisifed, continue on to the next step.</p>
+                    <p class="px-3">Scaling and height of the Final 3D block depends on the width and height of the SVG. Some SVGs are small (<100px) while others can be very large (>1000px). SVGs are generally unitless, but ultimately converted to millimeters.</p>
+                    <p class="px-3">Neck Height is the height of the SVG paths. This is typically set to 2mm. This value is multiplied by the scale. For larger SVGs, this value automatically scales to keep a consistent ratio. Should be left alone for the most part.</p>
+                    <p class="px-3">Adjust the padding between the SVG and the edge of the block. Move the sliders to increase or decrease padding. The adjusted size is shown to the right.</p>
+                  
                     <div class="row py-5 px-3">
                       <div class="col-sm-2 col-md-2 col-lg-4 col-xl-4 col-xxl-4 border">
                           <div>
@@ -170,29 +170,36 @@
                       <div class="col-sm-4 col-md-6 col-lg-6 col-xl-6 col-xxl-6 align-self-center border">
                         <div>
                           <label for="webNeckHeight" class="form-label">Set Neck Height </label><small> [betwen 1 and 2]</small>
-                          <input type="range" class="form-range" min="1" max="2" step="0.1" id="webNeckHeight">
+                          <input type="range" class="form-range" min="1.01" max="2" step="0.1" id="webNeckHeight">
                         </div>
-                    </div>
+                      </div>
                     </div>
                     <div class="row py-5 px-3">
                       <div class="col-sm-4 col-md-4 col-lg-8 col-xl-8 col-xxl-8 border">
-                          <div class="pb-3">
-                            <label for="webPaddingX" class="form-label">Adjust X Padding </label><small> [between 1 and 2]</small>
-                            <input type="range" class="form-range" min="1.01" max="2" step="0.01" id="webPaddingX">
-                          </div>
                           <div>
-                            <label for="webPaddingY" class="form-label">Adjust Y Padding </label><small> [between 1 and 2]</small>
-                            <input type="range" class="form-range" min="1.01" max="2" step="0.01" id="webPaddingY">
+                            <label for="xLenAdj" class="form-label">Adjust X Padding </label><small> [between 1 and 2]</small>
+                            <input type="range" class="form-range" min="1.01" max="2" step="0.01" id="xLenAdj">
                           </div>
                       </div>
-                      <div class="col-sm-2 col-md-2 col-lg-2 col-xl-2 col-xxl-2 border">
-                        <div id="adjustedWidth"></div>
-                        <div id="adjustedHeight"></div>
+                      <div class="col-sm-4 col-md-2 col-lg-2 col-xl-2 col-xxl-2 border">
+                          <div class="align-middle">
+                            <p>New Width</p>
+                            <div id="adjustedWidth"></div>
+                          </div>
                       </div>
                     </div>
-                    <div class="row py-3 justify-content-center px-3">
-                      <div class="text-center">
-                          <button type="button" class="btn btn-warning">Update</button>
+                    <div class="row py-5 px-3">
+                      <div class="col-sm-4 col-md-4 col-lg-8 col-xl-8 col-xxl-8 border">
+                          <div>
+                              <label for="yLenAdj" class="form-label">Adjust Y Padding </label><small> [between 1 and 2]</small>
+                              <input type="range" class="form-range" min="1.01" max="2" step="0.01" id="yLenAdj">
+                          </div>
+                      </div>
+                      <div class="col-sm-4 col-md-2 col-lg-2 col-xl-2 col-xxl-2 border">
+                          <div class="align-middle">
+                            <p>New Height</p>
+                            <div id="adjustedHeight"></div>
+                          </div>
                       </div>
                     </div>
                 </div>
@@ -206,27 +213,53 @@
               </h2>
               <div id="panelsStayOpen-collapseThree" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-headingThree">
                 <div class="accordion-body">
-                    <p class="px-3">Set wall widths. Wall widths are based off percentages of the overall length and width generated above. Typical setting is between 0.6% and 1% of the total width. </p>
+                    <p class="px-3">Set wall widths. Wall widths are based off percentages of the overall height and width generated above. Typical setting is between 0.6% and 1% of the total width. </p>
                     <p class="px-3">Set feet cut outs. This creates the notch at the bottom of the of the type. The height of the cutout is set using a very small percentage. Typically less than 0.2%.
                     </p>
                     <div class="row py-5 justify-content-center px-3">
                       <div class="col-sm-4 col-md-4 col-lg-4 col-xl-4 col-xxl-4 align-self-center">
                           <div>
-                            <label for="customRange40" class="form-label">Wall Width </label><small> Value betwen 0.6 and 1</small>
-                            <input type="range" class="form-range" min="0.6" max="1" step="0.1" id="customRange40">
+                            <label for="customRange40" class="form-label">Wall Width </label><small> Value between 40% and 80%</small>
+                            <input type="range" class="form-range" min="0.4" max="0.8" step="0.001" id="customRange40">
                           </div>
                       </div>
                       <div class="col-sm-4 col-md-4 col-lg-4 col-xl-4 col-xxl-4 align-self-center">
                           <div>
                             <label for="customRange41" class="form-label">Feet Cut Out Height </label><small> Value betwen 0.6 and 1</small>
-                            <input type="range" class="form-range" min="0.6" max="1" step="0.1" id="customRange41">
+                            <input type="range" class="form-range" min="0.6" max="1" step="0.001" id="customRange41">
+                          </div>
+                      </div>
+                    </div>
+                    <div class="row py-5 justify-content-center px-3">
+                      <div class="col-sm-4 col-md-4 col-lg-4 col-xl-4 col-xxl-4 align-self-center">
+                          <div>
+                            <p>Convert to 3D</p>
+                            <button type="button" class="btn btn-secondary" id="buttonConvertTo3D">Convert</button>
                           </div>
                       </div>
                     </div>
                 </div>
               </div>
           </div>
+        
+
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="panelsStayOpen-headingFour">
+            <button class="accordion-button collapsed text-dark text-bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseFour" aria-expanded="false" aria-controls="panelsStayOpen-collapseThree">
+              <strong>Results</strong>
+              </button>
+          </h2>
+          <div id="panelsStayOpen-collapseFour" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-headingFour">
+            <div class="accordion-body">
+              See Results here
+              <div id="result2D"></div>
+            </div>
+          </div>
         </div>
+
+      </div>
+      </div>
+
       </div>
       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
 
@@ -244,9 +277,36 @@
       </script>
 
       <script>
+        function createBlock() {
+        // Get the values from the input elements
+        const webNeckHeight = document.getElementById("webNeckHeight").value;
+        const xLenAdj = document.getElementById("xLenAdj").value;
+        const yLenAdj = document.getElementById("yLenAdj").value;
+        
+        // Make a POST request to the createBlock endpoint
+        fetch("/processBlockCreation", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            webNeckHeight,
+            xLenAdj,
+            yLenAdj
+          })
+        }).then(response => response.json())
+          .then(data => console.log(data))
+          .catch(error => console.error(error));
+      }
+
+      document.getElementById("buttonConvertTo3D").addEventListener("click", createBlock);
+
+      </script>
+
+      <script>
         function updateAdjustedWidth() {
           const estimatedWidth = document.getElementById("estimatedWidth").innerHTML;
-          const rangeValueX = document.getElementById("webPaddingX").value;
+          const rangeValueX = document.getElementById("xLenAdj").value;
           const adjustedWidth = document.getElementById("adjustedWidth");
 
           // Multiply the range value by the estimated width
@@ -258,7 +318,7 @@
 
         function updateAdjustedHeight() {
           const estimatedHeight = document.getElementById("estimatedHeight").innerHTML;
-          const rangeValueY = document.getElementById("webPaddingY").value;
+          const rangeValueY = document.getElementById("yLenAdj").value;
           const adjustedHeight = document.getElementById("adjustedHeight");
           
           // Multiply the range value by the estimated width
@@ -269,8 +329,8 @@
         }
 
         // Get a reference to the range input element
-        const rangeInputX = document.getElementById("webPaddingX");
-        const rangeInputY = document.getElementById("webPaddingY");
+        const rangeInputX = document.getElementById("xLenAdj");
+        const rangeInputY = document.getElementById("yLenAdj");
 
         // Add an event listener to the range input element
         rangeInputX.addEventListener("input", updateAdjustedWidth);
