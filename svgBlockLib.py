@@ -137,7 +137,7 @@ class blkLibrary:
                 ymin = p_ymin if p_ymin < ymin else ymin
                 ymax = p_ymax if p_ymax > ymax else ymax
 
-        print(xmax-xmin, ymax-ymin)
+        #print(xmax-xmin, ymax-ymin)
         self.estimatedWidth = xmax - xmin
         self.estimatedHeight = ymax - ymin
         
@@ -321,12 +321,12 @@ class blkLibrary:
         
         for key, value in kwargs.items():
             if key == 'projectionDir':
-                print(value)
+                #print(value)
                 opts[key] = value
                 
             opts[key] = value
             
-        print(opts)
+        #print(opts)
         
         exporters.export(
             self.base,
@@ -406,7 +406,7 @@ def arc_endpoint_to_center(
     flag_s,
     radius,
     phi):
-    print('Fn: Arc_endpoint_to_center')
+    #print('Fn: Arc_endpoint_to_center')
     '''Convert a endpoint elliptical arc description to a center description'''
     rx,ry = radius.real,radius.imag
     x1,y1 = start.real,start.imag

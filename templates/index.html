@@ -219,14 +219,20 @@
                     <div class="row py-5 justify-content-center px-3">
                       <div class="col-sm-4 col-md-4 col-lg-4 col-xl-4 col-xxl-4 align-self-center">
                           <div>
-                            <label for="customRange40" class="form-label">Wall Width </label><small> Value between 40% and 80%</small>
-                            <input type="range" class="form-range" min="0.4" max="0.8" step="0.001" id="customRange40">
+                            <label for="xhollowPercentage" class="form-label">Wall Width X</label><small> Value between 40% and 80%</small>
+                            <input type="range" class="form-range" min="0.4" max="0.8" step="0.001" value="0.8" id="xhollowPercentage">
                           </div>
                       </div>
                       <div class="col-sm-4 col-md-4 col-lg-4 col-xl-4 col-xxl-4 align-self-center">
+                        <div>
+                          <label for="yhollowPercentage" class="form-label">Wall Width Y</label><small> Value between 40% and 80%</small>
+                          <input type="range" class="form-range" min="0.4" max="0.8" step="0.001" value="0.8" id="yhollowPercentage">
+                        </div>
+                    </div>
+                      <div class="col-sm-4 col-md-4 col-lg-4 col-xl-4 col-xxl-4 align-self-center">
                           <div>
-                            <label for="customRange41" class="form-label">Feet Cut Out Height </label><small> Value betwen 0.6 and 1</small>
-                            <input type="range" class="form-range" min="0.6" max="1" step="0.001" id="customRange41">
+                            <label for="feetCutOutPercentage" class="form-label">Feet Cut Out Height </label><small> Value betwen 0.6 and 1</small>
+                            <input type="range" class="form-range" min="0.08" max="0.14" step="0.001" value="0.10" id="feetCutOutPercentage">
                           </div>
                       </div>
                     </div>
@@ -282,6 +288,9 @@
         const webNeckHeight = document.getElementById("webNeckHeight").value;
         const xLenAdj = document.getElementById("xLenAdj").value;
         const yLenAdj = document.getElementById("yLenAdj").value;
+        const xhollowPercentage = document.getElementById("xhollowPercentage").value;
+        const yhollowPercentage = document.getElementById("yhollowPercentage").value;
+        const feetCutOutPercentage = document.getElementById("feetCutOutPercentage").value;
         
         // Make a POST request to the createBlock endpoint
         fetch("/processBlockCreation", {
@@ -292,7 +301,10 @@
           body: JSON.stringify({
             webNeckHeight,
             xLenAdj,
-            yLenAdj
+            yLenAdj,
+            xhollowPercentage,
+            yhollowPercentage,
+            feetCutOutPercentage
           })
         }).then(response => response.json())
           .then(data => console.log(data))
@@ -424,6 +436,7 @@
                   img.className = 'upload_img mt-2';
                   img.setAttribute('alt', file.name);
                   img.src = reader.result;
+                  dataRefs.gallery.innerHTML="";
                   dataRefs.gallery.appendChild(img);
                 }
               }

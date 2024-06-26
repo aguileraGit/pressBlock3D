@@ -78,7 +78,7 @@ def processUpload():
             g.alertType='success'
             g.alertTitle='Image'
             g.alertText='Image uploaded to server!'
-            turbo.push(turbo.update(render_template('_alerts.html'), 'divAlert'))
+            turbo.push(turbo.append(render_template('_alerts.html'), 'divAlert'))
         
         #Update website values
         scaleName = 'webScale_' + str((int(blk.scaleBy)))
@@ -124,45 +124,79 @@ def processBlockCreation():
     print('Fn: processBlockCreation')
 
     if request.method == 'POST':
+
+        #Update user
+        with app.app_context(): 
+            g.alertType='warning'
+            g.alertTitle='Processing'
+            g.alertText='Crunching numbers... Drawing Lines...'
+            turbo.push(turbo.append(render_template('_alerts.html'), 'divAlert'))
+        
         
         print(request.json['webNeckHeight'])
         print(request.json['xLenAdj'])
         print(request.json['yLenAdj'])
 
-        #Do the actual translation from 2D to 3D
-        blk.translate2Dto3D()
-
         #Add some buffer space around the 2D SVG
-        blk.xLenAdj = 1.02
-        blk.yLenAdj = 1.02
+        blk.neckHeight = float(request.json['webNeckHeight'])
+        blk.xLenAdj = float(request.json['xLenAdj'])
+        blk.yLenAdj = float(request.json['yLenAdj'])
+        blk.xhollowPercentage = float(request.json['xhollowPercentage'])
+        blk.yhollowPercentage = float(request.json['yhollowPercentage'])
+        blk.feetCutOutPercentage = float(request.json['feetCutOutPercentage'])
 
-        blk.buildBoundingBox()
+        try:
+            #Do the actual translation from 2D to 3D
+            blk.translate2Dto3D()
+            blk.buildBoundingBox()
 
-        #Calculate heights and Width and extrude
-        blk.doMath()
-        blk.buildBody()
+            #Calculate heights and Width and extrude
+            blk.doMath()
+            blk.buildBody()
 
-        #Set hollow amount and hollow body
-        blk.xhollowPercentage = 0.8
-        blk.yhollowPercentage = 0.8
-        blk.hollowBody()
-        blk.createAndCutPyramid()
+            #Set hollow amount and hollow body
+            #blk.xhollowPercentage = 0.8
+            #blk.yhollowPercentage = 0.8
+            blk.hollowBody()
+            blk.createAndCutPyramid()
 
-        #Cut Feet and Fillet
-        blk.cutFeet()
-        #blk.smoothOuterEdges()
+            #Cut Feet and Fillet
+            blk.cutFeet()
+            #blk.smoothOuterEdges()
 
-        #Create SVG
-        svgResultFilename = blk.exportSVG(folder='static/',
-                    projectionDir=(0.5, 0.5, 0.5),
-                    strokeColor=(0,0,0),
-                    strokeWidth=2.2,
-                    hiddenColor=(94,94,94)
-                    )
+            #Create SVG
+            svgResultFilename = blk.exportSVG(folder='static/',
+                        projectionDir=(0.5, 0.5, 0.5),
+                        strokeColor=(0,0,0),
+                        strokeWidth=2.2,
+                        hiddenColor=(94,94,94)
+                        )
+        
+            #Update user
+            with app.app_context(): 
+                g.alertType='success'
+                g.alertTitle='Success!'
+                g.alertText='SVG Block has been created!'
+                turbo.push(turbo.append(render_template('_alerts.html'), 'divAlert'))
+            
 
-        #Set name and push update
-        g.svgResultFilename = svgResultFilename
-        turbo.push(turbo.update(render_template('_svgResult2D.html'), 'result2D'))
+            #Set name and push update
+            g.svgResultFilename = svgResultFilename
+            turbo.push(turbo.update(render_template('_svgResult2D.html'), 'result2D'))
 
-        returnDict = {'status':'success'}
-        return returnDict
+            returnDict = {'status':'success'}
+            return returnDict
+
+        except:
+            #Update user
+            with app.app_context(): 
+                g.alertType='danger'
+                g.alertTitle='Error!'
+                g.alertText='SVG Block could not be created!'
+                turbo.push(turbo.append(render_template('_alerts.html'), 'divAlert'))
+
+            returnDict = {'status':'error'}
+            return returnDict
+                
+
+        
