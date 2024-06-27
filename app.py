@@ -4,7 +4,7 @@ from werkzeug.datastructures import ImmutableMultiDict
 from werkzeug.utils import secure_filename
 import os
 import uuid
-
+import xml.dom.minidom as dom
 
 import svgBlockLib
 
@@ -60,7 +60,10 @@ def processUpload():
             blk.readSVGFromFile(app.config['UPLOAD_FOLDER'] + "/" + filename)
             blk.parseSVG()
             blk.estimateSVGSize()
-            
+
+            #Check for elements that are not paths
+            nonSVGPathCounts = checkSVGForNonPaths(app.config['UPLOAD_FOLDER'] + "/" + filename)
+
             g.pathCount = blk.pathCount
             g.estimatedWidth = blk.estimatedWidth
             g.estimatedHeight = blk.estimatedHeight
@@ -80,6 +83,14 @@ def processUpload():
             g.alertText='Image uploaded to server!'
             turbo.push(turbo.append(render_template('_alerts.html'), 'divAlert'))
         
+        if nonSVGPathCounts > 0:
+            with app.app_context(): 
+                g.alertType='warning'
+                g.alertTitle='Caution'
+                g.alertText='SVG Contains Non-Path elements. These elements will not be processed and may change the overall look of the SVG.'
+                turbo.push(turbo.append(render_template('_alerts.html'), 'divAlert'))
+
+
         #Update website values
         scaleName = 'webScale_' + str((int(blk.scaleBy)))
         returnDict = {'status':'success',
@@ -199,4 +210,20 @@ def processBlockCreation():
             return returnDict
                 
 
-        
+def checkSVGForNonPaths(svgfile):
+    '''
+    Generated using Ollama & Codellama model. Not very well though
+    '''
+
+    # Load an SVG file
+    svg = dom.parse(svgfile)
+
+    # Get all elements in the SVG document that are not paths
+    elements = svg.getElementsByTagName('*')
+    count = 0
+    for element in elements:
+        if element.tagName != 'path':
+            count = count + 1
+
+    return count
+

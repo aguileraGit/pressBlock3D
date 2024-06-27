@@ -178,7 +178,7 @@
                       <div class="col-sm-4 col-md-4 col-lg-8 col-xl-8 col-xxl-8 border">
                           <div>
                             <label for="xLenAdj" class="form-label">Adjust X Padding </label><small> [between 1 and 2]</small>
-                            <input type="range" class="form-range" min="1.01" max="2" step="0.01" id="xLenAdj">
+                            <input type="range" class="form-range" min="1.01" max="2" step="0.01" value="1.01" id="xLenAdj">
                           </div>
                       </div>
                       <div class="col-sm-4 col-md-2 col-lg-2 col-xl-2 col-xxl-2 border">
@@ -192,7 +192,7 @@
                       <div class="col-sm-4 col-md-4 col-lg-8 col-xl-8 col-xxl-8 border">
                           <div>
                               <label for="yLenAdj" class="form-label">Adjust Y Padding </label><small> [between 1 and 2]</small>
-                              <input type="range" class="form-range" min="1.01" max="2" step="0.01" id="yLenAdj">
+                              <input type="range" class="form-range" min="1.01" max="2" step="0.01" value="1.01" id="yLenAdj">
                           </div>
                       </div>
                       <div class="col-sm-4 col-md-2 col-lg-2 col-xl-2 col-xxl-2 border">
@@ -467,24 +467,30 @@
                 //console.log('posted: ', data);
                 if (data.success === true) {
                   previewFiles(dataRefs);
-                } else {
-                  console.log('URL: ', url, '  name: ', name)
-                  //Need code to read incoming dict and set default values
-                  console.log(data) 
+                
+                //Check JSON response from backend
+                } else if (data["status"] = "success"){
+                  console.log("Realllll Success!")
                   
+                  //Parse the rest of JSON value
                   for (const key in data) {
                     const value = data[key];
                     if (key === "setScale") {
                       // Find the radio button that matches the id and set it to checked
                       const radioButton = document.getElementById(value);
                       radioButton.checked = true;
-                      console.log(radioButton)
-                    } else {
-                      // Handle other keys in the dict
                     }
+                    //Add more json keys to parse here
                   }
 
+                  //
+
+                } else {
+                  //console.log('URL: ', url, '  name: ', name)
+                  //Need code to read incoming dict and set default values
+                  console.log("Else") 
                 }
+                
               })
               .catch(error => {
                 console.error('errored: ', error);

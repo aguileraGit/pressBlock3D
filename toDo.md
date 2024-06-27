@@ -1,9 +1,11 @@
 
 ## To do
-- [x] Create git
-- [x] Write Library
-- [x] Look at Fn: parseSVG to make front end easier to use
-- [x] Add Fn to generate [SVG](https://cadquery.readthedocs.io/en/latest/importexport.html#exporting-svg) of final Block in 3D
+- [ ] Fix number of paths not showing up
+- [ ] Estimated Height/Width showing up on different line
+- [ ] Estimated Height/Width should propage to next section once SVG upload successful
+- [ ] Need to add in fillet
+- [ ] Uploading second file before setting values results in 2 SVGs processed on backend. Fix it.
+
 - [ ] Should we be checking for paths that aren't closed? I believe svgpathtools has a way to check.
 - [ ] Should be checking for SVGs with text and other non-supported commands to produce warning for user
 - [ ] Need to look at globals and turbo to see how this is affected when moving to ngix or similar
@@ -33,3 +35,13 @@ This is a challenge since Dov's current code depend on svgpathtools which seems 
 In theory could parse again using other libraries. 
 - Text would rely on font in SVG.
 - Lines, circles, rect, etc could be done with a sweep.
+
+
+## Document deployment process
+Document things needed to be able to deploy this in a more professional way
+
+## Pip
+- Flask
+- pip install git+https://github.com/CadQuery/cadquery.git@3451007f8eeb9d78e784ec8047ef69a5359ecb5e
+- Other SVG libraries (svgparse?, svgpathtools, stl-numpy?, )
+- Turbo
