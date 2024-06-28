@@ -17,9 +17,23 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 turbo = Turbo(app)
 
+app.secret_key = 'BAD_SECRET_KEY'
+
 alertTypes = ['alert-primary', 'alert-success', 'alert-warning', 'alert-danger']
 
-#Initalize Lib
+class userClass:
+    def __init__(self):
+        self.id = None
+
+    def createUUID(self):
+        id = uuid.uuid4()
+        self.id = id
+        return id
+        
+
+user = userClass()
+
+#Initalize Lib  
 blk = svgBlockLib.blkLibrary()
 
 @app.route('/testAlert')
@@ -35,9 +49,16 @@ def testAlert():
     
     return {'return':'None'}
 
+@turbo.user_id
+def get_user_id():
+    return user.id
 
 @app.route('/')
 def index():
+    #Create a new ID when the page is loaded. 
+    #Each time the page is refreshed, a new ID/User is created
+    user.createUUID()
+    get_user_id()
     return render_template('index.html')
 
 
@@ -73,7 +94,8 @@ def processUpload():
             g.scaleBy = blk.scaleBy
 
             #Update div
-            turbo.push(turbo.update(render_template('_svgStats.html'), 'uploadResultsText'))    
+            #with app.app_context(): 
+            turbo.push(turbo.update(render_template('_svgStats.html'), 'uploadResultsText'), to=user.id)    
 
 
         #Must use app_context
@@ -81,14 +103,14 @@ def processUpload():
             g.alertType='success'
             g.alertTitle='Image'
             g.alertText='Image uploaded to server!'
-            turbo.push(turbo.append(render_template('_alerts.html'), 'divAlert'))
+            turbo.push(turbo.append(render_template('_alerts.html'), 'divAlert'), to=user.id)
         
         if nonSVGPathCounts > 0:
             with app.app_context(): 
                 g.alertType='warning'
                 g.alertTitle='Caution'
                 g.alertText='SVG Contains Non-Path elements. These elements will not be processed and may change the overall look of the SVG.'
-                turbo.push(turbo.append(render_template('_alerts.html'), 'divAlert'))
+                turbo.push(turbo.append(render_template('_alerts.html'), 'divAlert'), to=user.id)
 
 
         #Update website values
@@ -141,7 +163,7 @@ def processBlockCreation():
             g.alertType='warning'
             g.alertTitle='Processing'
             g.alertText='Crunching numbers... Drawing Lines...'
-            turbo.push(turbo.append(render_template('_alerts.html'), 'divAlert'))
+            turbo.push(turbo.append(render_template('_alerts.html'), 'divAlert'), to=user.id)
         
         
         print(request.json['webNeckHeight'])
@@ -188,12 +210,12 @@ def processBlockCreation():
                 g.alertType='success'
                 g.alertTitle='Success!'
                 g.alertText='SVG Block has been created!'
-                turbo.push(turbo.append(render_template('_alerts.html'), 'divAlert'))
+                turbo.push(turbo.append(render_template('_alerts.html'), 'divAlert'), to=user.id)
             
 
             #Set name and push update
             g.svgResultFilename = svgResultFilename
-            turbo.push(turbo.update(render_template('_svgResult2D.html'), 'result2D'))
+            turbo.push(turbo.update(render_template('_svgResult2D.html'), 'result2D'), to=user.id)
 
             returnDict = {'status':'success'}
             return returnDict
@@ -204,7 +226,7 @@ def processBlockCreation():
                 g.alertType='danger'
                 g.alertTitle='Error!'
                 g.alertText='SVG Block could not be created!'
-                turbo.push(turbo.append(render_template('_alerts.html'), 'divAlert'))
+                turbo.push(turbo.append(render_template('_alerts.html'), 'divAlert'), to=user.id)
 
             returnDict = {'status':'error'}
             return returnDict
